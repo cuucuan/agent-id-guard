@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Agent ID Guard — free soulbound Guard Pass for Agent ID holders on BNB Chain, plus a read-only self-audit of your own token approvals." />
+    <link rel="icon" href="data:," />
+    <title>Agent ID Guard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f6f7f4;
+        --surface: #ffffff;
+        --surface-2: #eef1ea;
+        --ink: #17211a;
+        --ink-soft: #43524a;
+        --line: #d8ded2;
+        --accent: #0d7a43;
+        --accent-ink: #ffffff;
+        --accent-soft: #e2f2e7;
+        --gold: #b8860b;
+        --warn: #9a6206;
+        --warn-bg: #fdf3dd;
+        --bad: #b3261e;
+        --bad-bg: #fbe9e7;
+        --ok: #0d7a43;
+        --code-bg: #101812;
+        --code-ink: #cfe3d4;
+        --shadow: 0 1px 2px rgba(23, 33, 26, .06), 0 8px 24px rgba(23, 33, 26, .06);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0e130f;
+          --surface: #161d17;
+          --surface-2: #1d261e;
+          --ink: #e8efe9;
+          --ink-soft: #a7b8ab;
+          --line: #2c3a2e;
+          --accent: #2fbf71;
+          --accent-ink: #08130c;
+          --accent-soft: #173324;
+          --gold: #e3b341;
+          --warn: #e3b341;
+          --warn-bg: #2e2712;
+          --bad: #ff8a80;
+          --bad-bg: #331a17;
+          --ok: #2fbf71;
+          --code-bg: #0a0f0b;
+          --code-ink: #b9d6c0;
+          --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.55;
+      }
+      .wrap { max-width: 880px; margin: 0 auto; padding: 0 1.1rem 3.5rem; }
+      a { color: var(--accent); }
+      .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* Hero */
+      .hero { padding: 2.6rem 0 1.4rem; }
+      .hero-top { display: flex; align-items: flex-start; gap: 1rem; }
+      .shield {
+        flex: 0 0 auto; width: 60px; height: 60px; border-radius: 14px;
+        background: var(--accent); display: grid; place-items: center;
+      }
+      .shield svg { width: 34px; height: 34px; }
+      h1 { font-size: clamp(1.9rem, 5.5vw, 2.7rem); line-height: 1.08; margin: 0; letter-spacing: -0.02em; font-weight: 700; }
+      .tagline { margin: .45rem 0 0; color: var(--ink-soft); font-size: 1.02rem; max-width: 34rem; }
+      .live-pill {
+        display: inline-flex; align-items: center; gap: .45rem; margin-top: 1rem;
+        background: var(--accent-soft); color: var(--ink);
+        border: 1px solid var(--line); border-radius: 999px; padding: .35rem .8rem; font-size: .88rem; font-weight: 500;
+      }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+      /* Stats */
+      .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; margin: 1.6rem 0 .4rem; }
+      .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: .85rem .9rem; box-shadow: var(--shadow); }
+      .stat .num { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+      .stat .lbl { font-size: .8rem; color: var(--ink-soft); margin-top: .1rem; }
+      @media (max-width: 620px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+      /* Cards */
+      .card {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+        padding: 1.3rem 1.3rem 1.4rem; margin-top: 1.4rem; box-shadow: var(--shadow);
+      }
+      .card h2 { font-size: 1.25rem; margin: 0 0 .35rem; letter-spacing: -0.01em; }
+      .card .sub { color: var(--ink-soft); margin: 0 0 1rem; font-size: .95rem; }
+      label { display: block; font-size: .9rem; font-weight: 500; margin: .9rem 0 .3rem; }
+      label:first-of-type { margin-top: 0; }
+      input, select {
+        width: 100%; padding: .65rem .7rem; font-size: 1rem; min-height: 2.75rem;
+        border: 1px solid var(--line); border-radius: 8px; background: var(--surface);
+        color: var(--ink); font-family: inherit;
+      }
+      input.mono { font-size: .9rem; }
+      button {
+        min-height: 2.75rem; padding: .65rem 1.25rem; font-size: 1rem; font-weight: 600;
+        border-radius: 8px; border: 1px solid transparent; cursor: pointer; font-family: inherit;
+      }
+      button.primary { background: var(--accent); color: var(--accent-ink); margin-top: 1rem; }
+      button.primary:disabled { opacity: .45; cursor: not-allowed; }
+      button.ghost { background: var(--surface-2); color: var(--ink); border-color: var(--line); margin-top: 1rem; }
+      .status { margin: .8rem 0 0; font-size: .95rem; }
+      .status:empty { display: none; }
+      .ok { color: var(--ok); font-weight: 600; }
+      .warn-t { color: var(--warn); font-weight: 600; }
+      .bad-t { color: var(--bad); font-weight: 600; }
+      .muted { color: var(--ink-soft); font-size: .9rem; }
+      .addr { word-break: break-all; font-size: .88rem; }
+
+      /* Audit results */
+      .spender { border: 1px solid var(--line); border-radius: 10px; padding: .9rem 1rem; margin-top: .7rem; background: var(--surface-2); }
+      .spender .name { font-weight: 600; }
+      .spender .row { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; margin-top: .3rem; font-size: .92rem; }
+      .flag { display: inline-block; border-radius: 6px; padding: .1rem .5rem; font-size: .82rem; font-weight: 600; }
+      .flag.zero { background: var(--accent-soft); color: var(--ok); }
+      .flag.nonzero { background: var(--warn-bg); color: var(--warn); }
+      .flag.unlim { background: var(--bad-bg); color: var(--bad); }
+
+      /* Log */
+      #log {
+        white-space: pre-wrap; word-break: break-word; background: var(--code-bg); color: var(--code-ink);
+        padding: .9rem 1rem; border-radius: 8px; font-size: .85rem; max-height: 260px; overflow-y: auto;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+      }
+
+      /* Contract table */
+      .kv { display: grid; grid-template-columns: 11rem 1fr; gap: .45rem 1rem; font-size: .95rem; }
+      .kv dt { color: var(--ink-soft); }
+      .kv dd { margin: 0; }
+      @media (max-width: 560px) { .kv { grid-template-columns: 1fr; gap: .1rem; } .kv dd { margin-bottom: .6rem; } }
+
+      .steps { margin: .4rem 0 0; padding-left: 1.25rem; }
+      .steps li { margin: .35rem 0; }
+      footer { margin-top: 2.4rem; color: var(--ink-soft); font-size: .9rem; }
+      footer .row { display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <header class="hero">
+        <div class="hero-top">
+          <div class="shield" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2.5 4.5 5.4v6.1c0 4.6 3.2 8.4 7.5 10 4.3-1.6 7.5-5.4 7.5-10V5.4L12 2.5Z" fill="#ffffff" opacity=".22"/>
+              <path d="M12 2.5 4.5 5.4v6.1c0 4.6 3.2 8.4 7.5 10 4.3-1.6 7.5-5.4 7.5-10V5.4L12 2.5Z" stroke="#ffffff" stroke-width="1.6"/>
+              <path d="m8.8 12.1 2.3 2.3 4.2-4.6" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Agent ID Guard</h1>
+            <p class="tagline">A free, soulbound <strong>Guard Pass</strong> minted only by Agent ID holders — turning the Agent&nbsp;ID name into on-chain access — plus a read-only self-audit of your own wallet's token approvals.</p>
+          </div>
+        </div>
+        <span class="live-pill"><span class="dot"></span> Live on BNB Smart Chain · Contract verified on BscScan</span>
+      </header>
+
+      <section class="stats" aria-label="Guard Pass facts">
+        <div class="stat"><div class="num" id="statMinted">—</div><div class="lbl">Passes minted so far (live from chain)</div></div>
+        <div class="stat"><div class="num">10,000</div><div class="lbl">Max supply, one per wallet</div></div>
+        <div class="stat"><div class="num">0 BNB</div><div class="lbl">Mint price — gas only, value 0 enforced</div></div>
+        <div class="stat"><div class="num">Soulbound</div><div class="lbl">Non-transferable by contract</div></div>
+      </section>
+
+      <section class="card" id="mintCard">
+        <h2>1 · Mint your Guard Pass</h2>
+        <p class="sub">Connect a wallet that holds an Agent ID. The contract checks your Agent ID balance on-chain before it lets you mint — no Agent ID, no pass.</p>
+
+        <label for="chainSel">Network</label>
+        <select id="chainSel">
+          <option value="56">BSC Mainnet (live)</option>
+          <option value="97">BSC Testnet (demo)</option>
+        </select>
+
+        <button class="primary" id="connectBtn" type="button">Connect wallet</button>
+        <p class="status muted" id="walletInfo">Not connected.</p>
+        <p class="status" id="agentStatus"></p>
+        <p class="status muted" id="mintStatus"></p>
+        <button class="primary" id="mintBtn" type="button" disabled>Mint free Guard Pass (value 0)</button>
+        <p class="muted">Minting is a normal wallet transaction you confirm yourself. One pass per wallet, and the pass can never be transferred or sold.</p>
+      </section>
+
+      <section class="card" id="auditCard">
+        <h2>2 · Self-audit your approvals</h2>
+        <p class="sub">Pick a token you hold. We read its allowance for well-known spenders and flag unlimited approvals — the kind that can drain a wallet if a spender is ever compromised. This is read-only: nothing is signed, nothing is sent.</p>
+
+        <label for="tokenPick">Token</label>
+        <select id="tokenPick">
+          <option value="0x55d398326f99059fF775485246999027B3197955">USDT (BSC)</option>
+          <option value="0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d">USDC (BSC)</option>
+          <option value="0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c">WBNB</option>
+          <option value="">Custom token contract…</option>
+        </select>
+
+        <label for="tokenInput">Token contract address</label>
+        <input class="mono" id="tokenInput" value="0x55d398326f99059fF775485246999027B3197955" spellcheck="false" autocomplete="off" />
+
+        <label for="spenderInput">Custom spender (optional — checked alongside the known routers)</label>
+        <input class="mono" id="spenderInput" placeholder="0x…" spellcheck="false" autocomplete="off" />
+
+        <button class="primary" id="auditBtn" type="button" disabled>Audit my approvals</button>
+        <div id="auditOut"></div>
+      </section>
+
+      <section class="card">
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li><strong>Hold an Agent ID.</strong> The Guard Pass contract reads the Agent ID registry (<span class="mono addr">0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F</span>) and only mints when your wallet's balance is above zero.</li>
+          <li><strong>Mint free.</strong> <span class="mono">mint()</span> is non-payable — the contract itself enforces value 0. You pay only the network gas.</li>
+          <li><strong>Keep the pass.</strong> It's soulbound: transfers revert in the contract, so the pass always proves the wallet that earned it.</li>
+          <li><strong>Audit yourself.</strong> The approval check above runs entirely in your browser against public chain data. Agent ID is used as an access gate only — never to look up anyone else's wallet.</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>Contract</h2>
+        <dl class="kv">
+          <dt>Guard Pass (mainnet)</dt>
+          <dd><span class="mono addr">0x78af83801960d9FaD4e725f16F267540FE02a64b</span><br />
+            <a href="https://bscscan.com/address/0x78af83801960d9FaD4e725f16F267540FE02a64b" target="_blank" rel="noopener">View verified source on BscScan ↗</a></dd>
+          <dt>Token</dt>
+          <dd>Agent ID Guard Pass (GUARD) · ERC-721 · open source (MIT)</dd>
+          <dt>Agent ID registry</dt>
+          <dd><span class="mono addr">0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F</span></dd>
+          <dt>Testnet (demo)</dt>
+          <dd><span class="mono addr">0xee4f009fd5128A436db9cfde6a30f9DC0e627Fb3</span><br />
+            <a href="https://testnet.bscscan.com/address/0xee4f009fd5128A436db9cfde6a30f9DC0e627Fb3" target="_blank" rel="noopener">View on BscScan Testnet ↗</a></dd>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2>Activity log</h2>
+        <div id="log">Ready.</div>
+      </section>
+
+      <footer>
+        <div class="row">
+          <span>Built for the Agent ID Hackathon — Binance Wallet × BNB Chain.</span>
+          <a href="https://x.com/ajengsua" target="_blank" rel="noopener">Follow on X — @ajengsua ↗</a>
+        </div>
+        <p>This page never asks for your seed phrase, private key, QR login, or pairing code — anything that does is a scam. The audit is read-only; the only transaction this page can start is the free mint, which your wallet asks you to confirm.</p>
+      </footer>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script>
+      // Agent ID Guard — frontend logic (static, no backend).
+      // Audit is READ-ONLY (eth_call). Mint is the only transaction, value 0, from the user's own wallet.
+      var CONFIG = {
+        56: {
+          label: "BSC Mainnet",
+          registry: "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F", // Agent ID registry (SPACE ID)
+          guard: "0x78af83801960d9FaD4e725f16F267540FE02a64b",   // GuardPass mainnet, deployed 19 Nov 2026
+          rpc: "https://bsc-dataseed.binance.org"
+        },
+        97: {
+          label: "BSC Testnet",
+          registry: "0x6689c29fC1046126c5Cae419862608041f36E8a9", // MockAgentID (testnet)
+          guard: "0xee4f009fd5128A436db9cfde6a30f9DC0e627Fb3",   // GuardPass (testnet)
+          rpc: "https://data-seed-prebsc-1-s1.binance.org:8545"
+        }
+      };
+
+      var GUARD_ABI = [
+        "function mint()",
+        "function balanceOf(address) view returns (uint256)",
+        "function hasMinted(address) view returns (bool)",
+        "function totalMinted() view returns (uint256)",
+        "function MAX_SUPPLY() view returns (uint256)"
+      ];
+      var REGISTRY_ABI = ["function balanceOf(address) view returns (uint256)"];
+      var ERC20_ABI = [
+        "function balanceOf(address) view returns (uint256)",
+        "function allowance(address owner, address spender) view returns (uint256)",
+        "function decimals() view returns (uint8)",
+        "function symbol() view returns (string)"
+      ];
+
+      // Well-known spenders worth flagging (DEX routers etc.). Users can add a custom one.
+      var KNOWN_SPENDERS = [
+        { name: "PancakeSwap V2 Router", addr: "0x10ED43C718714eb63d5aA57B78B54704E256024E" },
+        { name: "PancakeSwap V3 Router", addr: "0x13f4EA83D0bd40E75C8222255bcEaA92818e6C3" }
+      ];
+
+      function $(id) { return document.getElementById(id); }
+      var logEl = $("log");
+      function log(msg) { logEl.textContent += "\n" + msg; logEl.scrollTop = logEl.scrollHeight; }
+      function note(el, msg) { el.textContent = msg; }
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+
+      function fmtAllowance(v, dec) {
+        if (v.isZero()) return "0";
+        if (v.eq(ethers.constants.MaxUint256)) return "UNLIMITED";
+        try { return ethers.utils.formatUnits(v, dec); } catch (e) { return v.toString(); }
+      }
+
+      var provider = null, signer = null, account = null, chainId = null;
+
+      function selectedChain() { return Number($("chainSel").value); }
+
+      // Live minted counter — read-only, no wallet needed.
+      function loadStats() {
+        if (typeof ethers === "undefined") { $("statMinted").textContent = "—"; return; }
+        var cid = selectedChain();
+        var cfg = CONFIG[cid];
+        try {
+          var ro = new ethers.providers.JsonRpcProvider(cfg.rpc);
+          var guard = new ethers.Contract(cfg.guard, GUARD_ABI, ro);
+          guard.totalMinted().then(function (total) {
+            $("statMinted").textContent = total.toString() + " / 10,000";
+          }).catch(function () { $("statMinted").textContent = "—"; });
+        } catch (e) { $("statMinted").textContent = "—"; }
+      }
+
+      $("chainSel").addEventListener("change", function () {
+        account = null; signer = null; provider = null; chainId = null;
+        $("walletInfo").textContent = "Not connected.";
+        $("agentStatus").textContent = "";
+        $("mintStatus").textContent = "";
+        $("mintBtn").disabled = true;
+        $("auditBtn").disabled = true;
+        log("Switched view to " + CONFIG[selectedChain()].label + ". Connect again to use this network.");
+        loadStats();
+      });
+
+      $("tokenPick").addEventListener("change", function (e) {
+        if (e.target.value) $("tokenInput").value = e.target.value;
+        else $("tokenInput").focus();
+      });
+      $("tokenInput").addEventListener("input", function () { $("tokenPick").value = ""; });
+
+      $("connectBtn").addEventListener("click", function () {
+        (async function () {
+          try {
+            if (typeof ethers === "undefined") { log("Library failed to load — check your connection and reload."); return; }
+            if (!window.ethereum) { log("No injected wallet found (e.g. MetaMask or Binance Wallet). This page never asks for QR login or pairing codes."); return; }
+            var want = selectedChain();
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            var net = await provider.getNetwork();
+            chainId = net.chainId;
+            if (chainId !== want) {
+              await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x" + want.toString(16) }] });
+              provider = new ethers.providers.Web3Provider(window.ethereum);
+              net = await provider.getNetwork();
+              chainId = net.chainId;
+            }
+            signer = provider.getSigner();
+            account = await signer.getAddress();
+            $("walletInfo").textContent = "Connected: " + account + " (" + CONFIG[chainId].label + ")";
+            $("auditBtn").disabled = false;
+            log("Connected " + account + " on chain " + chainId);
+            await refreshStatus();
+          } catch (e) { log("Connect failed: " + (e && e.message ? e.message : e)); }
+        })();
+      });
+
+      async function refreshStatus() {
+        var cfg = CONFIG[chainId];
+        if (!cfg) { $("agentStatus").textContent = "Unsupported chain."; return; }
+        try {
+          var reg = new ethers.Contract(cfg.registry, REGISTRY_ABI, provider);
+          var idBal = await reg.balanceOf(account);
+          var hasId = idBal.gt(0);
+          $("agentStatus").innerHTML = hasId
+            ? '<span class="ok">✓ Holds an Agent ID (balance ' + idBal.toString() + ').</span>'
+            : '<span class="bad-t">✗ No Agent ID on this wallet — minting is gated to Agent ID holders.</span>';
+          var guard = new ethers.Contract(cfg.guard, GUARD_ABI, provider);
+          var minted = await guard.hasMinted(account);
+          var total = await guard.totalMinted();
+          var max = await guard.MAX_SUPPLY();
+          $("mintStatus").textContent = "Minted so far: " + total.toString() + " / " + max.toString() + " — you have " + (minted ? "already minted your pass." : "not minted yet.");
+          $("mintBtn").disabled = !(hasId && !minted);
+          log("Guard status: totalMinted=" + total.toString() + ", you minted=" + minted);
+        } catch (e) { log("Status check failed: " + (e && e.message ? e.message : e)); }
+      }
+
+      $("mintBtn").addEventListener("click", function () {
+        (async function () {
+          var cfg = CONFIG[chainId];
+          try {
+            var guard = new ethers.Contract(cfg.guard, GUARD_ABI, signer);
+            log("Sending mint() — value 0, gas only. Confirm in your wallet.");
+            var tx = await guard.mint(); // non-payable: value 0 enforced by the contract
+            log("Mint tx: " + tx.hash);
+            var rc = await tx.wait();
+            log("Mint confirmed in block " + rc.blockNumber + ".");
+            await refreshStatus();
+            loadStats();
+          } catch (e) { log("Mint failed: " + (e && (e.reason || e.message) ? (e.reason || e.message) : e)); }
+        })();
+      });
+
+      $("auditBtn").addEventListener("click", function () {
+        (async function () {
+          var tokenAddr = $("tokenInput").value.trim();
+          if (!ethers.utils.isAddress(tokenAddr)) { log("Audit: enter a valid token contract address first."); return; }
+          var customSpender = $("spenderInput").value.trim();
+          try {
+            var token = new ethers.Contract(tokenAddr, ERC20_ABI, provider);
+            var sym = "?"; try { sym = await token.symbol(); } catch (e) {}
+            var dec = 18; try { dec = await token.decimals(); } catch (e) {}
+            var bal = await token.balanceOf(account);
+            var spenders = KNOWN_SPENDERS.slice();
+            if (customSpender && ethers.utils.isAddress(customSpender)) spenders.push({ name: "Custom spender", addr: customSpender });
+            var html = "<h3 style='margin:1.1rem 0 .2rem;font-size:1.05rem;'>" + esc(sym) + " — your balance: " + esc(ethers.utils.formatUnits(bal, dec)) + "</h3>";
+            for (var i = 0; i < spenders.length; i++) {
+              var s = spenders[i];
+              var al = await token.allowance(account, s.addr);
+              var flag, cls;
+              if (al.eq(ethers.constants.MaxUint256)) { flag = "UNLIMITED — revoke if you don't actively use it"; cls = "unlim"; }
+              else if (al.gt(0)) { flag = "Non-zero approval"; cls = "nonzero"; }
+              else { flag = "No approval"; cls = "zero"; }
+              html += '<div class="spender"><div class="name">' + esc(s.name) + '</div>' +
+                '<div class="mono addr">' + esc(s.addr) + '</div>' +
+                '<div class="row"><span>Allowance: <strong>' + esc(fmtAllowance(al, dec)) + '</strong></span>' +
+                '<span class="flag ' + cls + '">' + esc(flag) + '</span></div></div>';
+              log("allowance " + sym + " -> " + s.name + ": " + fmtAllowance(al, dec));
+            }
+            html += '<p class="muted">Read-only check. To revoke an approval, call approve(spender, 0) on the token from your own wallet — and never approve unlimited unless you actively use that spender.</p>';
+            $("auditOut").innerHTML = html;
+          } catch (e) { log("Audit failed: " + (e && e.message ? e.message : e)); }
+        })();
+      });
+
+      if (typeof ethers === "undefined") {
+        log("Could not load the ethers library — wallet features need a network connection to the CDN.");
+      } else {
+        loadStats();
+        log("Ready. Pick a network, connect your wallet, then mint or audit.");
+      }
+    </script>
+  </body>
+</html>
